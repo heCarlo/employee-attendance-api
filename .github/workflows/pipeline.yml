@@ -1,0 +1,56 @@
+name: Pipeline
+
+on: 
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps: 
+      - name: Checar código do repositório
+        uses: actions/checkout@v3
+
+      - name: Configurar o ambiente Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Instalar dependências
+        run: |
+          npm install
+
+      - name: Configurar variáveis de ambiente
+        run: |
+          echo "DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_db" >> $GITHUB_ENV
+
+      - name: Aguardar o banco de dados inicializar
+        run: |
+          until pg_isready -h localhost -p 5432; do
+            echo "Aguardando o banco de dados..."
+            sleep 5
+          done
+
+      - name: Rodar os testes
+        run: |
+          DATABASE_URL=${{ secrets.DATABASE_URL }} npm test
