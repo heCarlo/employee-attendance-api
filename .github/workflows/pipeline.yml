@@ -53,4 +53,4 @@ jobs:
 
       - name: Rodar os testes
         run: |
-          DATABASE_URL=${ DATABASE_URL } npm test
+          npm test
