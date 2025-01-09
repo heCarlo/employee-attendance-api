@@ -53,4 +53,4 @@ jobs:
 
       - name: Rodar os testes
         run: |
-          DATABASE_URL=${{ secrets.DATABASE_URL }} npm test
+          DATABASE_URL=${ DATABASE_URL } npm test
